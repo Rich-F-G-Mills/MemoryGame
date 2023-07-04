@@ -1,0 +1,141 @@
+﻿<Window x:Class="View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="500">
+    <Window.Resources>
+        <EllipseGeometry x:Key="GridOuterCircle" Center="0,0" RadiusX="225" RadiusY="225"/>
+        <EllipseGeometry x:Key="GridInnerCircle" Center="0,0" RadiusX="205" RadiusY="205"/>
+        <CombinedGeometry x:Key="GridBorder" GeometryCombineMode="Exclude">
+            <CombinedGeometry.Geometry1>
+                <StaticResource ResourceKey="GridOuterCircle"/>
+            </CombinedGeometry.Geometry1>
+            <CombinedGeometry.Geometry2>
+                <StaticResource ResourceKey="GridInnerCircle"/>
+            </CombinedGeometry.Geometry2>
+        </CombinedGeometry>
+        <CombinedGeometry x:Key="GridInnerCrossBar" GeometryCombineMode="Intersect">
+            <CombinedGeometry.Geometry1>
+                <CombinedGeometry GeometryCombineMode="Union">
+                    <CombinedGeometry.Geometry1>
+                        <RectangleGeometry Rect="-225,-10,450,20"/>
+                    </CombinedGeometry.Geometry1>
+                    <CombinedGeometry.Geometry2>
+                        <RectangleGeometry Rect="-10,-225,20,450"/>
+                    </CombinedGeometry.Geometry2>
+                </CombinedGeometry>
+            </CombinedGeometry.Geometry1>
+            <CombinedGeometry.Geometry2>
+                <StaticResource ResourceKey="GridOuterCircle"/>
+            </CombinedGeometry.Geometry2>
+        </CombinedGeometry>
+        <CombinedGeometry x:Key="Grid" GeometryCombineMode="Union">
+            <CombinedGeometry.Geometry1>
+                <StaticResource ResourceKey="GridBorder"/>
+            </CombinedGeometry.Geometry1>
+            <CombinedGeometry.Geometry2>
+                <StaticResource ResourceKey="GridInnerCrossBar"/>
+            </CombinedGeometry.Geometry2>
+        </CombinedGeometry>
+        <CombinedGeometry x:Key="GridInverse" GeometryCombineMode="Exclude">
+            <CombinedGeometry.Geometry1>
+                <StaticResource ResourceKey="GridInnerCircle"/>
+            </CombinedGeometry.Geometry1>
+            <CombinedGeometry.Geometry2>
+                <StaticResource ResourceKey="Grid"/>
+            </CombinedGeometry.Geometry2>
+        </CombinedGeometry>
+        <RectangleGeometry x:Key="TL" Rect="-225,-225,225,225"/>
+        <RectangleGeometry x:Key="TR" Rect="0,-225,225,225"/>
+        <RectangleGeometry x:Key="BL" Rect="-225,0,225,225"/>
+        <RectangleGeometry x:Key="BR" Rect="0,0,225,225"/>
+        <Storyboard x:Key="FlashGridButton" TargetProperty="Opacity" FillBehavior="Stop">
+            <DoubleAnimationUsingKeyFrames>
+                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0.25"/>
+                <LinearDoubleKeyFrame KeyTime="0:0:0.1" Value="1.0"/>
+                <LinearDoubleKeyFrame KeyTime="0:0:0.2" Value="0.25"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="FlashGridSuccess" TargetProperty="(Path.Fill).(SolidColorBrush.Color)" FillBehavior="Stop">
+            <ColorAnimationUsingKeyFrames>
+                <LinearColorKeyFrame KeyTime="0:0:0" Value="Black"/>
+                <LinearColorKeyFrame KeyTime="0:0:0.1" Value="LightGreen"/>
+                <LinearColorKeyFrame KeyTime="0:0:0.2" Value="Black"/>
+            </ColorAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="FlashGridFailed" TargetProperty="(Path.Fill).(SolidColorBrush.Color)" FillBehavior="Stop">
+            <ColorAnimationUsingKeyFrames>
+                <LinearColorKeyFrame KeyTime="0:0:0" Value="Black"/>
+                <LinearColorKeyFrame KeyTime="0:0:0.1" Value="Red"/>
+                <LinearColorKeyFrame KeyTime="0:0:0.2" Value="Black"/>
+            </ColorAnimationUsingKeyFrames>
+        </Storyboard>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="500"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Canvas VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Path Name="Grid" Fill="Black" x:FieldModifier="public">
+                <Path.Data>
+                    <StaticResource ResourceKey="Grid"/>
+                </Path.Data>
+            </Path>
+            <Canvas>
+                <Canvas.Resources>
+                    <Style TargetType="Path">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Setter Property="Clip" Value="{StaticResource GridInverse}"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsAwaitingUserResponse}" Value="True"/>
+                                    <Condition Binding="{Binding Path=IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard TargetProperty="Opacity">
+                                            <DoubleAnimation Duration="0:0:0.1" To="0.25"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </MultiDataTrigger.EnterActions>
+                                <MultiDataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard TargetProperty="Opacity">
+                                            <DoubleAnimation Duration="0:0:0.1" To="0"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </MultiDataTrigger.ExitActions>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Canvas.Resources>
+                <Path Name="TL" Fill="Red" x:FieldModifier="public">
+                    <Path.Data>
+                        <StaticResource ResourceKey="TL"/>
+                    </Path.Data>
+                </Path>
+                <Path Name="TR" Fill="Blue" x:FieldModifier="public">
+                    <Path.Data>
+                        <StaticResource ResourceKey="TR"/>
+                    </Path.Data>
+                </Path>
+                <Path Name="BL" Fill="Green" x:FieldModifier="public">
+                    <Path.Data>
+                        <StaticResource ResourceKey="BL"/>
+                    </Path.Data>
+                </Path>
+                <Path Name="BR" Fill="Orange" x:FieldModifier="public">
+                    <Path.Data>
+                        <StaticResource ResourceKey="BR"/>
+                    </Path.Data>
+                </Path>
+            </Canvas>
+        </Canvas>
+        <TextBox Name="GameOver" Text="GAME OVER" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="48" IsReadOnly="True" FontWeight="Bold" Background="White" Foreground="Red" BorderBrush="Black" BorderThickness="5,5,5,5" Visibility="Hidden"/>
+        <Button Content="START" Command="{Binding Start}" Grid.Row="1" FontSize="36" FontWeight="Bold" Margin="5,5,5,5"/>       
+    </Grid>
+</Window>
